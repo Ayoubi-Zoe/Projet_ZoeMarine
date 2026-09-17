@@ -1,40 +1,28 @@
-from dash import Dash, html, dcc, Input, Output
+from dash import html, Dash, page_registry, page_container
+import dash_bootstrap_components as dbc
 
-app = Dash(__name__)
-
-app.layout = html.Div([
-    html.H1("Projet Zoé & Marine"),
-
-    dcc.Location(id="url"),
-
-    html.Nav([
-        dcc.Link("Page Zoé", href="/zoe"),
-        html.Span(" | "),
-        dcc.Link("Page Marine", href="/marine")
-    ]),
-
-    html.Hr(),
-
-    html.Div(id="contenu-page")
-])
-
-
-@app.callback(
-    Output("contenu-page", "children"),
-    Input("url", "pathname")
+app = Dash(__name__,
+    use_pages=True,
+    external_stylesheets=[dbc.themes.BOOTSTRAP]
 )
-def afficher_page(pathname):
-    if pathname == "/marine":
-        return html.Div([
-            html.H2("Page de Marine"),
-            html.P("Marine ajoutera son contenu ici.")
-        ])
 
-    return html.Div([
-        html.H2("Page de Zoé"),
-        html.P("Contenu de la page de Zoé.")
-    ])
+sidebar = html.Div([
+    html.Img(src='assets/img/logo.png', className="logo"),
+    html.Hr(),
+    dbc.Nav([
+            dbc.NavLink(
+                children=[html.Div(page["name"], className="ms-2")],
+                href=page["path"],
+                active="exact"
+            )
+            for page in page_registry.values()
+        ],
+        vertical=True)
+], className='sidebar')
 
+content = html.Div(page_container, className='body')
+
+app.layout = html.Div([sidebar, content])
 
 if __name__ == "__main__":
     app.run(debug=True)
